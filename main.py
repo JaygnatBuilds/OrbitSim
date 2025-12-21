@@ -12,6 +12,7 @@ class OrbitSimulation:
         self.root.resizable(0,0)
         self.canvas = None
         self.object_manager = None
+        self.object_config = []
 
         self.build_gui()
 
@@ -30,6 +31,7 @@ class OrbitSimulation:
         side_config = ttk.Frame(main_container, width=300)
         side_config.pack(side='right', fill='y', expand=False)
         side_config.pack_propagate(False)
+
         title_label = ttk.Label(
             side_config, 
             text="Python Orbit Simulator", 
@@ -38,10 +40,23 @@ class OrbitSimulation:
             )
         title_label.pack(side='top', fill='x', pady=(10,20))
 
+        # Create form input container
+        form_frame = ttk.Frame(side_config)
+        form_frame.pack(fill='both', expand=True, anchor='nw', padx=0)
+
+        mass_label = ttk.Label(form_frame, text='Mass:', anchor='w', font=('Arial', 12))
+        mass_label.grid(row=0, column=0, sticky='w', padx=(5, 0), pady=5)
+
+        mass_entry = ttk.Entry(form_frame, width=15)
+        mass_entry.grid(row=0, column=1, sticky='w', padx=(5, 0), pady=5)
+
+        self.object_config.append(mass_entry)
+        
     def start(self):
         if self.canvas is None:
             raise ValueError("orbitSim requires a Canvas to run orbital simulation")
-        self.orbit_simulator = ObjectManager(self.canvas)
+        self.orbit_simulator = ObjectManager(self.canvas, self.object_config)
+        self.orbit_simulator.spawn_sun(WIDTH-300, HEIGHT)
 
 
 
