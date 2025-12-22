@@ -12,6 +12,21 @@ class Vector2:
     def __init__(self, x, y) -> None:
         self.x, self.y = x, y
 
+    def __eq__(self, other) -> bool:
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self,other) -> bool:
+        return not self.__eq__(other)
+
+    def __add__(self, other):
+        return Vector2(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Vector2(self.x - other.x, self.y - other.y)
+
+    def distance_to(self, other):
+        return math.sqrt((other.x - self.x) ** 2, (other.y - self.y) ** 2)
+
 
 
 class CelestialObject:
@@ -39,6 +54,12 @@ class CelestialObject:
         y2 = self.center.y + self.radius
         self.canvas.create_oval(x1, y1, x2, y2, fill="black", outline=self.color)
 
+    def attraction(self, other):
+
+        # get position of other celestial object
+        distance = self.center.distance_to(other.center)
+
+
 
 
 class ObjectManager:
@@ -54,9 +75,13 @@ class ObjectManager:
         
         # Grab config info from config entries
         mass = self.config[0].get()
+        tag = self.config[1].get()
         
         if(mass == ""):
             messagebox.showerror("Error", "Object must have mass.") 
+            return
+        if(tag == ""):
+            messagebox.showerror("Error","Object must have a tag (Name)")
             return
 
         new_object = CelestialObject(
@@ -64,14 +89,15 @@ class ObjectManager:
             self.canvas,
             10,
             mass,
-            "object"
+            tag
         )
         self.celestialObjects.append(new_object)
         new_object.draw()
 
     def spawn_sun(self, width, height):
-
-        mass = 1000
+        
+        # mass of the sun
+        mass = 1.98892 * 10**30
 
         x = width // 2
         y = height // 2
@@ -79,7 +105,7 @@ class ObjectManager:
         new_object = CelestialObject(
             Vector2(x, y),
             self.canvas,
-            15,
+            20,
             mass,
             "Sun"
         )

@@ -44,13 +44,20 @@ class OrbitSimulation:
         form_frame = ttk.Frame(side_config)
         form_frame.pack(fill='both', expand=True, anchor='nw', padx=0)
 
+        # Object mass label and entry form
         mass_label = ttk.Label(form_frame, text='Mass:', anchor='w', font=('Arial', 12))
         mass_label.grid(row=0, column=0, sticky='w', padx=(5, 0), pady=5)
-
         mass_entry = ttk.Entry(form_frame, width=15)
         mass_entry.grid(row=0, column=1, sticky='w', padx=(5, 0), pady=5)
-
         self.object_config.append(mass_entry)
+
+        # Object tag label and entry form
+        tag_label = ttk.Label(form_frame, text="Tag:", anchor='w', font=('Arial', 12))
+        tag_label.grid(row=1, column=0, sticky='w', padx=(5, 0), pady=5)
+        tag_entry = ttk.Entry(form_frame, width=15)
+        tag_entry.grid(row=1, column=1, sticky='w', padx=(5, 0), pady=5)
+        self.object_config.append(tag_entry)
+
         
     def start(self):
         if self.canvas is None:
