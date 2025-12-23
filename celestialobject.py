@@ -56,9 +56,12 @@ class CelestialObject:
 
     def attraction(self, other):
 
-        # get position of other celestial object
+        # calculate distance between 2 objects
         distance = self.center.distance_to(other.center)
 
+        # if other is sun, calculate distance to sun
+        if( other.sun ):
+            self.distance_to_sun = distance
 
 
 
@@ -99,6 +102,7 @@ class ObjectManager:
         # mass of the sun
         mass = 1.98892 * 10**30
 
+        # calculate center of canvas
         x = width // 2
         y = height // 2
 
