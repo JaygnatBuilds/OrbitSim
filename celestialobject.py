@@ -7,6 +7,8 @@ AU = 149.6e6 * 1000
 G = 6.67428e-11
 # Scale factor
 SCALE = 250 / AU # 1 AU = 100 pixels
+# 1 day time step
+TIMESTEP = 3600*24
 
 class Vector2:
     def __init__(self, x, y) -> None:
@@ -42,6 +44,7 @@ class CelestialObject:
         self.radius = radius
         self.mass = mass
         self.velocity = Vector2(0,0)
+        self.orbit = [self.center]
         self.sun = False
         self.distance_to_sun = 0
         self.color = "white"
@@ -57,13 +60,37 @@ class CelestialObject:
     def attraction(self, other):
 
         # calculate distance between 2 objects
+        distance_x = other.center.x - self.center.x
+        distance_y = other.center.y - self.center.y
         distance = self.center.distance_to(other.center)
 
         # if other is sun, calculate distance to sun
         if( other.sun ):
             self.distance_to_sun = distance
 
+        force = ( G * self.mass * other.mass ) / distance ** 2
+        theta = math.atan2(distance_x, distance_y)
+        force_x = math.cos(theta) * force
+        forcy_y = math.sin(theta) * force
 
+        return force_x, force_y
+
+    # Sum force of attraction between current object and all other celestial objects
+    def update_position(self, planets):
+
+        total_force_x = total_force_y = 0
+
+        for planet in planets:
+            if self == planet:
+                continue
+            fx, fy = self.attraction(planet)
+            total_force_x += fx
+            total_force_y += fy
+
+        self.velocity += Vector2(total_force_x, total_force_y) / self.mass * TIMESTEP
+
+        self.center += self.velocity * TIMESTEP
+        self.orbit.append(self.center)
 
 class ObjectManager:
     def __init__(self, canvas: Canvas, config: list) -> None:
@@ -117,4 +144,9 @@ class ObjectManager:
         new_object.distance_to_sun = 0
 
         self.celestialObjects.append(new_object)
-        new_object.draw()
+
+    def update_objects(self):
+
+        for planet in celestialObjects:
+            planet.update_position(self.celestialObjects)
+            planet.draw()

@@ -64,6 +64,7 @@ class OrbitSimulation:
             raise ValueError("orbitSim requires a Canvas to run orbital simulation")
         self.orbit_simulator = ObjectManager(self.canvas, self.object_config)
         self.orbit_simulator.spawn_sun(WIDTH-300, HEIGHT)
+        self.orbit_simulator.update_objects()
 
 
 
