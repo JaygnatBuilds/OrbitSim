@@ -123,8 +123,10 @@ class CelestialObject:
     # Sum force of attraction between current object and all other celestial objects
     def update_position(self, planets):
 
+        # Total force by all other planets
         total_force_x = total_force_y = 0
 
+        # Add up total force by all other planets
         for planet in planets:
             if self == planet:
                 continue
@@ -132,12 +134,16 @@ class CelestialObject:
             total_force_x += fx
             total_force_y += fy
 
+        # Calculate velocity from forces in x,y directions
         self.velocity += Vector2(total_force_x, total_force_y) / self.mass * TIMESTEP
 
+        # Increment position based on velocity and time
         self.real_position += self.velocity * TIMESTEP
 
+        # Calculate position on screen based on real position
         self.update_screen_position()
 
+        # Add point for orbit visualization
         self.orbit.append(self.center)
 
 class ObjectManager:
