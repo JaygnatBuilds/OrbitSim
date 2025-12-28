@@ -273,8 +273,6 @@ class ObjectManager:
 
         orbit_option = self.config[3].instate(['selected'])
 
-        print(f"orbit option: {orbit_option}")
-
         for planet in self.celestialObjects:
 
             planet.draw(planet.center)
