@@ -76,6 +76,8 @@ class CelestialObject:
         self.mass = mass
         self.velocity = velocity
         self.orbit = [self.center]
+        self.orbit_line_id = None
+        self.oval_id = None
         self.sun = False
         self.distance_to_sun = 0
         self.color = "white"
@@ -93,12 +95,21 @@ class CelestialObject:
         return f"{self.tag}"
 
     def draw(self, center):
-        self.canvas.delete(self.tag)
-        x1 = self.center.x - self.radius
-        y1 = self.center.y - self.radius
-        x2 = self.center.x + self.radius
-        y2 = self.center.y + self.radius
-        self.canvas.create_oval(x1, y1, x2, y2, fill="black", outline=self.color, tags=(self.tag))
+
+        if self.oval_id is None:
+
+            x1 = self.center.x - self.radius
+            y1 = self.center.y - self.radius
+            x2 = self.center.x + self.radius
+            y2 = self.center.y + self.radius
+            self.oval_id = self.canvas.create_oval(x1, y1, x2, y2, fill="black", outline=self.color, tags=(self.tag))
+
+        else:
+            x1 = self.center.x - self.radius
+            y1 = self.center.y - self.radius
+            x2 = self.center.x + self.radius
+            y2 = self.center.y + self.radius
+            self.canvas.coords(self.oval_id, x1, y1, x2, y2)
 
     def attraction(self, other):
 
@@ -144,7 +155,45 @@ class CelestialObject:
         self.update_screen_position()
 
         # Add point for orbit visualization
-        self.orbit.append(self.center)
+        self.orbit.append(Vector2(self.center.x, self.center.y))
+
+    def draw_orbit(self):
+
+        print(f"\n=== Drawing orbit for {self.tag} ===")
+        print(f"Orbit has {len(self.orbit)} points")
+        # Check if all points are the same
+        if len(self.orbit) > 1:
+            first = self.orbit[0]
+            last = self.orbit[-1]
+        print(f"First point: ({first.x}, {first.y})")
+        print(f"Last point: ({last.x}, {last.y})")
+        print(f"Are they the same object? {first is last}")
+        print(f"Are they equal? {first.x == last.x and first.y == last.y}")
+    
+        coords = [coord for v in self.orbit for coord in (v.x, v.y)]
+        print(f"Coordinates (first 8): {coords[:8]}")
+
+        coords = [coord for v in self.orbit for coord in (v.x, v.y)]
+
+        if not coords or len(coords) < 4:
+            return
+
+        if self.orbit_line_id is None:
+            self.orbit_line_id = self.canvas.create_line(
+                *coords,
+                smooth=True,
+                fill="white",
+                width=1,
+                splinesteps=5,
+                tags=f"{self.tag}_orbit"
+            )
+        else:
+            # Update existing orbit line
+            self.canvas.coords(self.orbit_line_id, *coords)
+
+        # Limit orbit points to prevent bloat
+        if len(self.orbit) > 1000:
+            self.orbit = self.orbit[-1000:]
 
 class ObjectManager:
     def __init__(self, canvas: Canvas, config: list) -> None:
@@ -198,7 +247,6 @@ class ObjectManager:
             initial_v,
             tag
         )
-        
         self.celestialObjects.append(new_object)
 
 
@@ -225,4 +273,6 @@ class ObjectManager:
         for planet in self.celestialObjects:
             planet.draw(planet.center)
             planet.update_position(self.celestialObjects)
+            if(planet.tag != "Sun"):
+                planet.draw_orbit()
         self.canvas.after(100, self.update_objects)
