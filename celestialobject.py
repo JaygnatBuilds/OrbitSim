@@ -181,7 +181,7 @@ class CelestialObject:
         if self.orbit_line_id is None:
             self.orbit_line_id = self.canvas.create_line(
                 *coords,
-                smooth=True,
+                smooth=False,
                 fill="white",
                 width=1,
                 splinesteps=5,
