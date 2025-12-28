@@ -9,7 +9,7 @@ AU = 149.6e6 * 1000
 # Gravitational Constant
 G = 6.67428e-11
 # Scale factor
-SCALE = 250 / AU # 1 AU = 250 pixels
+SCALE = 200 / AU # 1 AU = 250 pixels
 # 1 day time step
 TIMESTEP = 3600*24
 
@@ -75,7 +75,7 @@ class CelestialObject:
         self.radius = radius
         self.mass = mass
         self.velocity = velocity
-        self.orbit = [self.center]
+        self.orbit = []
         self.orbit_line_id = None
         self.oval_id = None
         self.sun = False
@@ -159,20 +159,6 @@ class CelestialObject:
 
     def draw_orbit(self):
 
-        print(f"\n=== Drawing orbit for {self.tag} ===")
-        print(f"Orbit has {len(self.orbit)} points")
-        # Check if all points are the same
-        if len(self.orbit) > 1:
-            first = self.orbit[0]
-            last = self.orbit[-1]
-        print(f"First point: ({first.x}, {first.y})")
-        print(f"Last point: ({last.x}, {last.y})")
-        print(f"Are they the same object? {first is last}")
-        print(f"Are they equal? {first.x == last.x and first.y == last.y}")
-    
-        coords = [coord for v in self.orbit for coord in (v.x, v.y)]
-        print(f"Coordinates (first 8): {coords[:8]}")
-
         coords = [coord for v in self.orbit for coord in (v.x, v.y)]
 
         if not coords or len(coords) < 4:
@@ -181,7 +167,8 @@ class CelestialObject:
         if self.orbit_line_id is None:
             self.orbit_line_id = self.canvas.create_line(
                 *coords,
-                smooth=False,
+                dash=(5,2),
+                smooth=True,
                 fill="white",
                 width=1,
                 splinesteps=5,
@@ -194,6 +181,20 @@ class CelestialObject:
         # Limit orbit points to prevent bloat
         if len(self.orbit) > 1000:
             self.orbit = self.orbit[-1000:]
+
+        #print(f"\n=== Drawing orbit for {self.tag} ===")
+        #print(f"Orbit has {len(self.orbit)} points")
+        ## Check if all points are the same
+        #if len(self.orbit) > 1:
+        #    first = self.orbit[0]
+        #    last = self.orbit[-1]
+        #print(f"First point: ({first.x}, {first.y})")
+        #print(f"Last point: ({last.x}, {last.y})")
+        #print(f"Are they the same object? {first is last}")
+        #print(f"Are they equal? {first.x == last.x and first.y == last.y}")
+    #
+        #coords = [coord for v in self.orbit for coord in (v.x, v.y)]
+        #print(f"Coordinates (first 8): {coords[:8]}")
 
 class ObjectManager:
     def __init__(self, canvas: Canvas, config: list) -> None:
