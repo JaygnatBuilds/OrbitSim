@@ -118,6 +118,9 @@ class CelestialObject:
 
         self.update_screen_position()
 
+        self.canvas.tag_bind(self.tag, "<Enter>", self.on_enter)
+        self.canvas.tag_bind(self.tag, "<Button-1>", self.on_click)
+
     def update_screen_position(self):
 
         # Scale center position relative to canvas center
@@ -127,7 +130,18 @@ class CelestialObject:
     def __repr__(self) -> str:
         return f"{self.tag}"
 
-    def draw(self, center):
+    def on_enter(self, event):
+        print(self.tag)
+
+    def on_click(self, event):
+        print("------------------------------------------------")
+        print(f"Planet Name: {self.tag}")
+        print(f"Mass: {self.mass} kg")
+        print(f"Velocity: {self.velocity}")
+        print(f"Distance to Sun: {self.distance_to_sun/1000} km")
+        print("------------------------------------------------")
+
+    def draw(self):
 
         if self.oval_id is None:
 
@@ -226,55 +240,61 @@ class ObjectManager:
 
     # Spawn Celestial Object ( a Circle ) from click on canvas
     def spawn_objectClick(self, event):
+
+        # Check if an item on the canvas was clicked or the background itself
+        clicked_items = event.widget.find_withtag(tk.CURRENT)
         
-        # Grab config info from config entries
-        mass = self.config['mass'].get()                          # This returns a string btw
-        initial_velocity = self.config['initial_velocity'].get()  # This returns a string btw
-        tag = self.config['tag'].get()
-
-        if(mass == ""):
-            messagebox.showerror("Error", "Object must have mass.") 
+        if clicked_items:
             return
-        if(initial_velocity == ""):
-            messagebox.showerror("Error", "Object must have initial velocity")
-            return
-        if(tag == ""):
-            messagebox.showerror("Error","Object must have a tag (Name)")
-            return
+        else:
+            # Grab config info from config entries
+            mass = self.config['mass'].get()                          # This returns a string btw
+            initial_velocity = self.config['initial_velocity'].get()  # This returns a string btw
+            tag = self.config['tag'].get()
 
-        # Convert mass and velocity expressions
-        try:
-            mass = expression_convert(mass)
-        except ValueError as e:
-            messagebox.showerror("Error", f"{e} (mass)")
-            return
+            if(mass == ""):
+                messagebox.showerror("Error", "Object must have mass.") 
+                return
+            if(initial_velocity == ""):
+                messagebox.showerror("Error", "Object must have initial velocity")
+                return
+            if(tag == ""):
+                messagebox.showerror("Error","Object must have a tag (Name)")
+                return
 
-        try:
-            initial_velocity = expression_convert(initial_velocity)
-        except ValueError as e:
-            messagebox.showerror("Error", f"{e} (initial velocity)")
-            return
+            # Convert mass and velocity expressions
+            try:
+                mass = expression_convert(mass)
+            except ValueError as e:
+                messagebox.showerror("Error", f"{e} (mass)")
+                return
 
-        # Calculate real coordinate distance
-        real_x = (event.x - WIDTH/2) / SCALE
-        real_y = (event.y - HEIGHT/2) / SCALE
+            try:
+                initial_velocity = expression_convert(initial_velocity)
+            except ValueError as e:
+                messagebox.showerror("Error", f"{e} (initial velocity)")
+                return
 
-        # Create new celestial object
-        new_object = CelestialObject(
-            Vector2(real_x, real_y), 
-            self.canvas,
-            10,
-            mass,
-            Vector2(0, initial_velocity),
-            tag
-        )
-        self.celestialObjects.append(new_object)
+            # Calculate real coordinate distance
+            real_x = (event.x - WIDTH/2) / SCALE
+            real_y = (event.y - HEIGHT/2) / SCALE
 
-        new_object.draw(new_object.center)
+            # Create new celestial object
+            new_object = CelestialObject(
+                Vector2(real_x, real_y), 
+                self.canvas,
+                10,
+                mass,
+                Vector2(0, initial_velocity),
+                tag
+            )
+            self.celestialObjects.append(new_object)
 
-        self.config['mass'].delete(0, tk.END)
-        self.config['initial_velocity'].delete(0, tk.END)
-        self.config['tag'].delete(0, tk.END)
+            new_object.draw()
+
+            self.config['mass'].delete(0, tk.END)
+            self.config['initial_velocity'].delete(0, tk.END)
+            self.config['tag'].delete(0, tk.END)
     
     # Spawn Celestial Object ( a Circle ) with hardcoded values
     def spawn_object_hard(self, center, radius, mass, initial_v, tag):
@@ -315,7 +335,7 @@ class ObjectManager:
 
             for planet in self.celestialObjects:
 
-                planet.draw(planet.center)
+                planet.draw()
                 planet.update_position(self.celestialObjects)
                 # Draw orbits
                 if(planet.tag != "Sun" and orbit_option):
