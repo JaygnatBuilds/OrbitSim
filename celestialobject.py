@@ -9,8 +9,10 @@ WIDTH, HEIGHT = 900, 675
 AU = 149.6e6 * 1000
 # Gravitational Constant
 G = 6.67428e-11
+# Zoom Factor
+Zoom = 1
 # Scale factor
-SCALE = 200 / AU # 1 AU = 250 pixels
+SCALE = ( Zoom * 100 ) / AU # 1 AU = 100 pixels
 # 1 day time step
 TIMESTEP = 3600*24
 
@@ -91,6 +93,10 @@ class Vector2:
     def distance_to(self, other):
         return math.sqrt((other.x - self.x) ** 2 + (other.y - self.y) ** 2)
 
+# TO DO
+class SimulationSettings():
+    def __init__(self):
+        return
 
 class CelestialObject:
     def __init__(self, 
@@ -138,7 +144,7 @@ class CelestialObject:
         print(f"Planet Name: {self.tag}")
         print(f"Mass: {self.mass} kg")
         print(f"Velocity: {self.velocity}")
-        print(f"Distance to Sun: {self.distance_to_sun/1000} km")
+        print(f"Distance to Sun: {round(self.distance_to_sun/1000, 2)} km")
         print("------------------------------------------------")
 
     def draw(self):
@@ -149,7 +155,10 @@ class CelestialObject:
             y1 = self.center.y - self.radius
             x2 = self.center.x + self.radius
             y2 = self.center.y + self.radius
-            self.oval_id = self.canvas.create_oval(x1, y1, x2, y2, fill="black", outline=self.color, tags=(self.tag))
+            if( self.sun ):
+                self.oval_id = self.canvas.create_oval(x1, y1, x2, y2, fill="yellow", outline=self.color, tags=(self.tag))
+            else:
+                self.oval_id = self.canvas.create_oval(x1, y1, x2, y2, fill="black", outline=self.color, tags=(self.tag))
 
         else:
             x1 = self.center.x - self.radius
@@ -318,7 +327,7 @@ class ObjectManager:
         new_object = CelestialObject(
             Vector2(0, 0),
             self.canvas,
-            20,
+            12,
             mass,
             Vector2(0,0),
             "Sun"

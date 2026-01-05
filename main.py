@@ -1,4 +1,5 @@
 import math
+import tkinter as tk
 from tkinter import Canvas, Tk, ttk, IntVar
 from celestialobject import ObjectManager, Vector2, AU, G
 
@@ -83,6 +84,19 @@ class OrbitSimulation:
         orbit_pause.config(command=lambda: self.toggle_pause(orbit_pause))
         orbit_pause.grid(row=3, column=1, sticky='w', padx=(5,0), pady=5)
 
+        # zoom scale slider
+        zoom_scale = tk.Scale(
+            form_frame,
+            from_=0.1,
+            to=2.5,
+            resolution=0.1,
+            orient=tk.HORIZONTAL,
+            label="Zoom Scale",
+            length=200
+        )
+        zoom_scale.set(1.0) # default zoom
+        zoom_scale.grid(row=4, column=0, sticky='w', padx=(5,0), pady=5, columnspan=2)
+
 
     def toggle_pause(self, pause_button):
         if( self.object_config['pause'] ):
@@ -143,11 +157,11 @@ class OrbitSimulation:
         self.orbit_simulator = ObjectManager(self.canvas, self.object_config)
         self.orbit_simulator.spawn_sun()
         # add earth by default for testing
-        self.add_planet("Earth", 1.000, 0.0167, 5.9742e24, 12, 90, False)
+        self.add_planet("Earth", 1.000, 0.0167, 5.9742e24, 9, 90, False)
         # add some of the other planets for testing
-        self.add_planet("Mercury", 0.387, 0.2056, 3.30e23, 8, 0, True)
-        self.add_planet("Venus", 0.723, 0.0068, 4.8685e24, 10, 45, False)
-        self.add_planet("Mars", 1.524, 0.0934, 6.39e23, 10, 135, True)
+        self.add_planet("Mercury", 0.387, 0.2056, 3.30e23, 7, 0, True)
+        self.add_planet("Venus", 0.723, 0.0068, 4.8685e24, 7, 45, False)
+        self.add_planet("Mars", 1.524, 0.0934, 6.39e23, 9, 135, True)
                                      
         self.orbit_simulator.update_objects()
 
