@@ -93,10 +93,6 @@ class Vector2:
     def distance_to(self, other):
         return math.sqrt((other.x - self.x) ** 2 + (other.y - self.y) ** 2)
 
-# TO DO
-class SimulationSettings():
-    def __init__(self):
-        return
 
 class CelestialObject:
     def __init__(self, 
@@ -106,6 +102,7 @@ class CelestialObject:
                 mass: int,
                 velocity: Vector2, 
                 tag: str,
+                settings
                 ) -> None:
 
         self.real_position = Vector2(origin.x, origin.y)
@@ -121,6 +118,7 @@ class CelestialObject:
         self.distance_to_sun = 0
         self.color = "white"
         self.tag = tag
+        self.settings = settings
 
         self.update_screen_position()
 
@@ -130,8 +128,8 @@ class CelestialObject:
     def update_screen_position(self):
 
         # Scale center position relative to canvas center
-        self.center.x = self.real_position.x * SCALE + WIDTH / 2
-        self.center.y = self.real_position.y * SCALE + HEIGHT / 2
+        self.center.x = self.real_position.x * self.settings.SCALE + WIDTH / 2
+        self.center.y = self.real_position.y * self.settings.SCALE + HEIGHT / 2
 
     def __repr__(self) -> str:
         return f"{self.tag}"
@@ -240,10 +238,11 @@ class CelestialObject:
             self.orbit = self.orbit[-1000:]
 
 class ObjectManager:
-    def __init__(self, canvas: Canvas, config: dict) -> None:
+    def __init__(self, canvas: Canvas, config: dict, settings) -> None:
         self.canvas = canvas
         self.celestialObjects = []
         self.config = config
+        self.settings = settings
 
         self.canvas.bind("<Button-1>", self.spawn_objectClick)
 
@@ -285,8 +284,8 @@ class ObjectManager:
                 return
 
             # Calculate real coordinate distance
-            real_x = (event.x - WIDTH/2) / SCALE
-            real_y = (event.y - HEIGHT/2) / SCALE
+            real_x = (event.x - WIDTH/2) / self.settings.SCALE
+            real_y = (event.y - HEIGHT/2) / self.settings.SCALE
 
             # Create new celestial object
             new_object = CelestialObject(
@@ -295,7 +294,8 @@ class ObjectManager:
                 10,
                 mass,
                 Vector2(0, initial_velocity),
-                tag
+                tag,
+                self.settings
             )
             self.celestialObjects.append(new_object)
 
@@ -314,7 +314,8 @@ class ObjectManager:
             radius,
             mass,
             initial_v,
-            tag
+            tag,
+            self.settings
         )
         self.celestialObjects.append(new_object)
 
@@ -330,7 +331,8 @@ class ObjectManager:
             12,
             mass,
             Vector2(0,0),
-            "Sun"
+            "Sun",
+            self.settings
         )
         new_object.sun = True
         new_object.distance_to_sun = 0

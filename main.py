@@ -6,6 +6,23 @@ from celestialobject import ObjectManager, Vector2, AU, G
 
 WIDTH, HEIGHT = 1200, 675
 
+# TO DO 
+class SimulationSettings():
+    def __init__(self):
+        # Astronomical Units ( converted to meters )
+        self.AU = 149.6e6 * 1000
+        # Gravitational Constant
+        self.G = 6.67428e-11
+        # Zoom Factor
+        self.zoom = 1.0
+        # pixels per AU
+        self.base_pixels_per_au = 250
+        # 1 day time step
+        self.TIMESTEP = 3600*24
+
+    @property
+    def SCALE(self):
+        return (self.base_pixels_per_au / self.AU) / self.zoom
 
 class OrbitSimulation:
     def __init__(self,root):
@@ -21,6 +38,7 @@ class OrbitSimulation:
             'draw_orbit' : None,
             'pause' : 0
         }
+        self.simulation_settings = SimulationSettings()
 
         self.build_gui()
 
@@ -154,7 +172,7 @@ class OrbitSimulation:
     def start(self):
         if self.canvas is None:
             raise ValueError("orbitSim requires a Canvas to run orbital simulation")
-        self.orbit_simulator = ObjectManager(self.canvas, self.object_config)
+        self.orbit_simulator = ObjectManager(self.canvas, self.object_config, self.simulation_settings)
         self.orbit_simulator.spawn_sun()
         # add earth by default for testing
         self.add_planet("Earth", 1.000, 0.0167, 5.9742e24, 9, 90, False)
