@@ -39,6 +39,7 @@ class OrbitSimulation:
             'pause' : 0
         }
         self.simulation_settings = SimulationSettings()
+        self.selected_planet = None
 
         self.build_gui()
 
@@ -117,8 +118,8 @@ class OrbitSimulation:
         zoom_scale.grid(row=4, column=0, sticky='w', padx=(5,0), pady=5, columnspan=2)
 
         # Create a frame specifically for planet info in bottom right
-        info_frame = ttk.LabelFrame(side_config, text="Planet Information", padding="10")
-        info_frame.pack(side=tk.LEFT, padx=10, pady=10)
+        info_frame = ttk.LabelFrame(side_config, text="Planet Information", padding="10", width=100)
+        info_frame.pack(side=tk.LEFT, fill=tk.X, padx=10, pady=10, expand=True)
 
         # Create labels to display planet information
         # You can customize these based on what data you want to show
@@ -143,6 +144,27 @@ class OrbitSimulation:
         # Distance from center/origin
         self.info_labels['distance'] = ttk.Label(info_frame, text="Distance from Sun: 0.0")
         self.info_labels['distance'].pack(anchor=tk.W, pady=(5, 0))
+
+    def update_planet_info(self, planet):
+        
+        # set selected planet of objectManager class
+        self.orbit_simulator.selected_planet = planet
+
+        self.info_labels['tag'].config(text=f"Tag: {planet.tag}")
+
+        self.info_labels['mass'].config(text=f"Mass: {planet.mass:.3e} kg")
+        
+        self.info_labels['velocity'].config(text=f"Velocity: ( {planet.velocity.x/1000:.1f} , {planet.velocity.y/1000:.1f} ) km/s")
+
+        # format position for AU
+        x_au = abs(planet.real_position.x / self.simulation_settings.AU)
+        y_au = abs(planet.real_position.y / self.simulation_settings.AU)
+        self.info_labels['position'].config(text=f"Position: ( {x_au:.3f} , {y_au:.3f} ) AU")
+
+        # format distance to sun for AU
+        au_distance = planet.distance_to_sun / self.simulation_settings.AU
+        self.info_labels['distance'].config(text=f"Distance from sun: {au_distance:.3f} AU")
+
 
     def update_zoom(self, value):
         # update simulation settings zoom value
@@ -207,11 +229,15 @@ class OrbitSimulation:
         )
 
         
-
     def start(self):
         if self.canvas is None:
             raise ValueError("orbitSim requires a Canvas to run orbital simulation")
-        self.orbit_simulator = ObjectManager(self.canvas, self.object_config, self.simulation_settings)
+        self.orbit_simulator = ObjectManager(
+            self.canvas, 
+            self.object_config, 
+            self.simulation_settings,
+            self.update_planet_info
+        )
         self.orbit_simulator.spawn_sun()
         # add earth by default for testing
         self.add_planet("Earth", 1.000, 0.0167, 5.9742e24, 8, 90, False)

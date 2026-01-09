@@ -102,7 +102,8 @@ class CelestialObject:
                 mass: int,
                 velocity: Vector2, 
                 tag: str,
-                settings
+                settings,
+                update_callback
                 ) -> None:
 
         self.real_position = Vector2(origin.x, origin.y)
@@ -120,6 +121,7 @@ class CelestialObject:
         self.color = "white"
         self.tag = tag
         self.settings = settings
+        self.update_callback = update_callback
 
         self.update_screen_position()
 
@@ -136,15 +138,10 @@ class CelestialObject:
         return f"{self.tag}"
 
     def on_enter(self, event):
-        print(self.tag)
+        print(f"{self.tag}")
 
     def on_click(self, event):
-        print("------------------------------------------------")
-        print(f"Planet Name: {self.tag}")
-        print(f"Mass: {self.mass} kg")
-        print(f"Velocity: {self.velocity}")
-        print(f"Distance to Sun: {round(self.distance_to_sun/1000, 2)} km")
-        print("------------------------------------------------")
+        self.update_callback(self)
 
     def draw(self):
 
@@ -242,11 +239,13 @@ class CelestialObject:
         self.radius = self.settings.zoom * self.base_radius
 
 class ObjectManager:
-    def __init__(self, canvas: Canvas, config: dict, settings) -> None:
+    def __init__(self, canvas: Canvas, config: dict, settings, update_callback=None) -> None:
         self.canvas = canvas
         self.celestialObjects = []
         self.config = config
         self.settings = settings
+        self.update_callback = update_callback
+        self.selected_planet = None
 
         self.canvas.bind("<Button-1>", self.spawn_objectClick)
 
@@ -299,7 +298,8 @@ class ObjectManager:
                 mass,
                 Vector2(0, initial_velocity),
                 tag,
-                self.settings
+                self.settings,
+                self.update_callback
             )
             self.celestialObjects.append(new_object)
 
@@ -319,7 +319,8 @@ class ObjectManager:
             mass,
             initial_v,
             tag,
-            self.settings
+            self.settings,
+            self.update_callback
         )
         self.celestialObjects.append(new_object)
 
@@ -336,7 +337,8 @@ class ObjectManager:
             mass,
             Vector2(0,0),
             "Sun",
-            self.settings
+            self.settings,
+            self.update_callback
         )
         new_object.sun = True
         new_object.distance_to_sun = 0
@@ -345,7 +347,7 @@ class ObjectManager:
 
     def update_objects(self):
 
-        if ( not self.config['pause'] ):
+        if( not self.config['pause'] ):
             orbit_option = self.config['draw_orbit'].get()
 
             for planet in self.celestialObjects:
@@ -359,5 +361,8 @@ class ObjectManager:
                 if( not orbit_option and planet.orbit_line_id ):
                     self.canvas.delete(f"{planet.tag}_orbit")
                     planet.orbit_line_id = None
+        
+        if( hasattr(self, 'selected_planet') and self.selected_planet ):
+            self.update_callback(self.selected_planet)
 
         self.canvas.after(50, self.update_objects)
