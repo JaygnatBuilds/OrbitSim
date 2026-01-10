@@ -16,7 +16,7 @@ class SimulationSettings():
         # Zoom Factor
         self.zoom = 1.0
         # pixels per AU
-        self.base_pixels_per_au = 50
+        self.base_pixels_per_au = 200
         # 1 day time step
         self.TIMESTEP = 3600*24
 
@@ -39,7 +39,6 @@ class OrbitSimulation:
             'pause' : 0
         }
         self.simulation_settings = SimulationSettings()
-        self.selected_planet = None
 
         self.build_gui()
 
@@ -99,14 +98,13 @@ class OrbitSimulation:
         self.object_config['draw_orbit'] = orbit_var
 
         # Orbit pause/unpause button
-        orbit_pause = ttk.Button(form_frame, text="Pause", command=self.toggle_pause)
-        orbit_pause.config(command=lambda: self.toggle_pause(orbit_pause))
+        orbit_pause = ttk.Button(form_frame, text="Pause", command=lambda: self.toggle_pause(orbit_pause))
         orbit_pause.grid(row=3, column=1, sticky='w', padx=(5,0), pady=5)
 
         # zoom scale slider
         zoom_scale = tk.Scale(
             form_frame,
-            from_=0.5,
+            from_=0.1,
             to=2.5,
             resolution=0.1,
             orient=tk.HORIZONTAL,
@@ -145,6 +143,10 @@ class OrbitSimulation:
         self.info_labels['distance'] = ttk.Label(info_frame, text="Distance from Sun: 0.0")
         self.info_labels['distance'].pack(anchor=tk.W, pady=(5, 0))
 
+        # Spawn planets button
+        spawn_planets = ttk.Button(form_frame, text="Spawn Planets", command=self.spawn_planets)
+        spawn_planets.grid(row=5, column=0, sticky='w', padx=(5,0), pady=5)
+
     def update_planet_info(self, planet):
         
         # set selected planet of objectManager class
@@ -165,6 +167,16 @@ class OrbitSimulation:
         au_distance = planet.distance_to_sun / self.simulation_settings.AU
         self.info_labels['distance'].config(text=f"Distance from sun: {au_distance:.3f} AU")
 
+    def clear_planet_info(self):
+
+        # clear selected planet of objectManager class
+        self.orbit_simulator.selected_planet = None
+
+        self.info_labels['tag'].config(text="Tag: None")
+        self.info_labels['mass'].config(text="Mass: 0.0")
+        self.info_labels['velocity'].config(text="Velocity: (0.0, 0.0)")
+        self.info_labels['position'].config(text="Position: (0.0, 0.0)")
+        self.info_labels['distance'].config(text="Distance from Sun: 0.0")
 
     def update_zoom(self, value):
         # update simulation settings zoom value
@@ -230,7 +242,16 @@ class OrbitSimulation:
             name
         )
 
+    def spawn_planets(self):
+
+        self.add_planet("Earth", 1.000, 0.0167, 5.9742e24, 15, 90, False)
+        self.add_planet("Mercury", 0.387, 0.2056, 3.30e23, 10, 0, True)
+        self.add_planet("Venus", 0.723, 0.0068, 4.8685e24, 10, 45, False)
+        self.add_planet("Mars", 1.524, 0.0934, 6.39e23, 15, 135, True)
+        self.add_planet("Jupiter", 5.203, 0.0489, 1.898e27, 40, 180, False)
+        self.add_planet("Saturn", 9.537, 0.0539, 5.683e26, 35, 225, False)
         
+
     def start(self):
         if self.canvas is None:
             raise ValueError("orbitSim requires a Canvas to run orbital simulation")
@@ -238,20 +259,10 @@ class OrbitSimulation:
             self.canvas, 
             self.object_config, 
             self.simulation_settings,
-            self.update_planet_info
+            self.update_planet_info,
+            self.clear_planet_info
         )
         self.orbit_simulator.spawn_sun()
-        # add earth by default for testing
-        self.add_planet("Earth", 1.000, 0.0167, 5.9742e24, 8, 90, False)
-        # add some of the other planets for testing
-        self.add_planet("Mercury", 0.387, 0.2056, 3.30e23, 5, 0, True)
-        self.add_planet("Venus", 0.723, 0.0068, 4.8685e24, 5, 45, False)
-        self.add_planet("Mars", 1.524, 0.0934, 6.39e23, 8, 135, True)
-        self.add_planet("Jupiter", 5.203, 0.0489, 1.898e27, 20, 180, False)
-        self.add_planet("Saturn", 9.537, 0.0539, 5.683e26, 18, 225, False)
-        # These planets are too far for the canvas scaling
-        #self.add_planet("Uranus", 19.191, 0.0473, 8.681e25, 15, 270, False)
-        #self.add_planet("Neptune", 30.069, 0.0086, 1.024e26, 15, 315, False)
                                      
         self.orbit_simulator.update_objects()
 

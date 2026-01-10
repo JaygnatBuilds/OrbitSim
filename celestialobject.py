@@ -103,8 +103,7 @@ class CelestialObject:
                 mass: int,
                 velocity: Vector2, 
                 tag: str,
-                settings,
-                update_callback
+                object_manager
                 ) -> None:
 
         self.real_position = Vector2(origin.x, origin.y)
@@ -121,19 +120,19 @@ class CelestialObject:
         self.distance_to_sun = 0
         self.color = "white"
         self.tag = tag
-        self.settings = settings
-        self.update_callback = update_callback
+        self.object_manager = object_manager
 
         self.update_screen_position()
 
         self.canvas.tag_bind(self.tag, "<Enter>", self.on_enter)
         self.canvas.tag_bind(self.tag, "<Button-1>", self.on_click)
+        self.canvas.tag_bind(self.tag, "<Button-3>", self.delete_planet)
 
     def update_screen_position(self):
 
         # Scale center position relative to canvas center
-        self.center.x = self.real_position.x * self.settings.SCALE + WIDTH / 2
-        self.center.y = self.real_position.y * self.settings.SCALE + HEIGHT / 2
+        self.center.x = self.real_position.x * self.object_manager.settings.SCALE + WIDTH / 2
+        self.center.y = self.real_position.y * self.object_manager.settings.SCALE + HEIGHT / 2
 
     def __repr__(self) -> str:
         return f"{self.tag}"
@@ -142,7 +141,7 @@ class CelestialObject:
         print(f"{self.tag}")
 
     def on_click(self, event):
-        self.update_callback(self)
+        self.object_manager.update_callback(self)
 
     def draw(self):
 
@@ -199,10 +198,10 @@ class CelestialObject:
             total_force_y += fy
 
         # Calculate velocity from forces in x,y directions
-        self.velocity += Vector2(total_force_x, total_force_y) / self.mass * TIMESTEP
+        self.velocity += Vector2(total_force_x, total_force_y) / self.mass * self.object_manager.settings.TIMESTEP
 
         # Increment position based on velocity and time
-        self.real_position += self.velocity * TIMESTEP
+        self.real_position += self.velocity * self.object_manager.settings.TIMESTEP
 
 
         # Calculate position on screen based on real position
@@ -237,7 +236,43 @@ class CelestialObject:
             self.orbit = self.orbit[-1000:]
 
     def update_radius(self):
-        self.radius = self.settings.zoom * self.base_radius
+        self.radius = self.object_manager.settings.zoom * self.base_radius
+
+    def delete_planet(self, event):
+        
+        # Do not remove sun
+        if( self.sun ):
+            messagebox.showerror("Error", "Cannot remove sun")
+            return
+
+        # Remove visual elements on canvas
+        if( self.oval_id ):
+            self.canvas.delete(self.oval_id)
+        if( self.orbit_line_id ):
+            self.canvas.delete(self.oval_id)
+
+        # Delete tag references to planet
+        self.canvas.delete(f"{self.tag}")
+        self.canvas.delete(f"{self.tag}_orbit")
+
+        # Remove event bindings
+        self.canvas.tag_unbind(self.tag, "<Enter>")
+        self.canvas.tag_unbind(self.tag, "<Button-1>")
+        self.canvas.tag_unbind(self.tag, "<Button-3>")
+
+        # Remove planet from object manager celestial objects list
+        for i, planet in enumerate(self.object_manager.celestialObjects):
+            if planet.tag == self.tag:
+                self.object_manager.celestialObjects.pop(i)
+                break
+
+        self.oval_id = None
+        self.orbit_line_id = None
+        self.orbit = []
+
+        if( hasattr(self.object_manager, 'selected_planet') and self.object_manager.selected_planet ):
+            if( self.object_manager.selected_planet.tag == self.tag ):
+                self.object_manager.clear_callback()
 
 class ObjectManager:
     def __init__(
@@ -245,13 +280,15 @@ class ObjectManager:
                 canvas: Canvas, 
                 config: dict, 
                 settings, 
-                update_callback=None
+                update_callback=None,
+                clear_callback=None
                 ) -> None:
         self.canvas = canvas
         self.celestialObjects = []
         self.config = config
         self.settings = settings
         self.update_callback = update_callback
+        self.clear_callback = clear_callback
         self.selected_planet = None
 
         self.canvas.bind("<Button-1>", self.spawn_objectClick)
@@ -305,8 +342,7 @@ class ObjectManager:
                 mass,
                 Vector2(0, initial_velocity),
                 tag,
-                self.settings,
-                self.update_callback
+                self
             )
             self.celestialObjects.append(new_object)
 
@@ -326,8 +362,7 @@ class ObjectManager:
             mass,
             initial_v,
             tag,
-            self.settings,
-            self.update_callback
+            self
         )
         self.celestialObjects.append(new_object)
 
@@ -344,8 +379,7 @@ class ObjectManager:
             mass,
             Vector2(0,0),
             "Sun",
-            self.settings,
-            self.update_callback
+            self
         )
         new_object.sun = True
         new_object.distance_to_sun = 0
