@@ -178,29 +178,34 @@ class CelestialObject:
     # Sum force of attraction between current object and all other celestial objects
     def update_position(self, planets):
 
-        # Total force by all other planets
-        total_force_x = total_force_y = 0
+        # Ignore the sun, we want it to stay in the middle ( not totally realistic )
+        if( self.sun ):
+            return
+        else:
+        
+            # Total force by all other planets
+            total_force_x = total_force_y = 0
 
-        # Add up total force by all other planets
-        for planet in planets:
-            if self == planet:
-                continue
-            fx, fy = self.attraction(planet)
-            total_force_x += fx
-            total_force_y += fy
+            # Add up total force by all other planets
+            for planet in planets:
+                if self == planet:
+                    continue
+                fx, fy = self.attraction(planet)
+                total_force_x += fx
+                total_force_y += fy
 
-        # Calculate velocity from forces in x,y directions
-        self.velocity += Vector2(total_force_x, total_force_y) / self.mass * self.object_manager.settings.TIMESTEP
+            # Calculate velocity from forces in x,y directions
+            self.velocity += Vector2(total_force_x, total_force_y) / self.mass * self.object_manager.settings.TIMESTEP
 
-        # Increment position based on velocity and time
-        self.real_position += self.velocity * self.object_manager.settings.TIMESTEP
+            # Increment position based on velocity and time
+            self.real_position += self.velocity * self.object_manager.settings.TIMESTEP
 
 
-        # Calculate position on screen based on real position
-        self.update_screen_position()
+            # Calculate position on screen based on real position
+            self.update_screen_position()
 
-        # Add point for orbit visualization
-        self.orbit.append(Vector2(self.center.x, self.center.y))
+            # Add point for orbit visualization
+            self.orbit.append(Vector2(self.center.x, self.center.y))
 
     def draw_orbit(self):
 
@@ -292,6 +297,16 @@ class ObjectManager:
         self.update_callback = update_callback
         self.clear_callback = clear_callback
         self.selected_planet = None
+        self.empty_solar_system = self.canvas.create_text(
+                10, 665,                     
+                text="The universe is a vast, cold, and empty place...",  
+                font=("Verdana", 8, "bold italic"),  
+                fill="white",              
+                anchor="w",            
+                width=500,
+                tags="no_planets",
+                state="normal"                                
+            )
 
         self.canvas.bind("<Button-1>", self.spawn_objectClick)
 
@@ -401,56 +416,71 @@ class ObjectManager:
 
     def clear_planets(self):
 
-        # Make copy to avoid modification when iterating
-        planets_list = self.celestialObjects.copy()
+        result = messagebox.askyesno("Warning", "Are you sure you want to remove all planets?")
 
-        for planet in planets_list:
+        if( result ):
 
-            # skip sun
-            if( not planet.sun ):
-                # delete canvas visual elements
-                if( planet.oval_id ):
-                    self.canvas.delete(planet.oval_id)
-                if( planet.orbit_line_id ):
-                    self.canvas.delete(planet.orbit_line_id)
+            # Make copy to avoid modification when iterating
+            planets_list = self.celestialObjects.copy()
 
-                # delete canvas tags
-                self.canvas.delete(planet.tag)
-                self.canvas.delete(f"{planet.tag}_orbit")
-    
-                # remove event bindings
-                self.canvas.tag_unbind(planet.tag, "<Enter>")
-                self.canvas.tag_unbind(planet.tag, "<Button-1>")
-                self.canvas.tag_unbind(planet.tag, "<Button-3>")
-    
-                # remove from celestialObjects list
-                if( planet in self.celestialObjects ):
-                    self.celestialObjects.remove(planet)
+            for planet in planets_list:
 
-        # Clear selected planet from info frame
-        self.selected_planet = None
-        if( self.clear_callback ):
-            self.clear_callback()
+                # skip sun
+                if( not planet.sun ):
+                    # delete canvas visual elements
+                    if( planet.oval_id ):
+                        self.canvas.delete(planet.oval_id)
+                    if( planet.orbit_line_id ):
+                        self.canvas.delete(planet.orbit_line_id)
+
+                    # delete canvas tags
+                    self.canvas.delete(planet.tag)
+                    self.canvas.delete(f"{planet.tag}_orbit")
+
+                    # remove event bindings
+                    self.canvas.tag_unbind(planet.tag, "<Enter>")
+                    self.canvas.tag_unbind(planet.tag, "<Button-1>")
+                    self.canvas.tag_unbind(planet.tag, "<Button-3>")
+
+                    # remove from celestialObjects list
+                    if( planet in self.celestialObjects ):
+                        self.celestialObjects.remove(planet)
+
+            # Clear selected planet from info frame
+            self.selected_planet = None
+            if( self.clear_callback ):
+                self.clear_callback()
+        
+        else:
+            return
 
     def update_objects(self):
 
+        if( len(self.celestialObjects) == 1):
 
-        if( not self.config['pause'] ):
-            orbit_option = self.config['draw_orbit'].get()
+            self.canvas.itemconfig(self.empty_solar_system, state="normal")
 
-            for planet in self.celestialObjects:
+        else:
+            
+            self.canvas.itemconfig(self.empty_solar_system, state="hidden")
 
-                planet.draw()
-                planet.update_position(self.celestialObjects)
-                # Draw orbits
-                if(planet.tag != "Sun" and orbit_option):
-                    planet.draw_orbit()
-                # if orbit option deselected, remove orbit lines
-                if( not orbit_option and planet.orbit_line_id ):
-                    self.canvas.delete(f"{planet.tag}_orbit")
-                    planet.orbit_line_id = None
+            if( not self.config['pause'] ):
+                orbit_option = self.config['draw_orbit'].get()
+
+                for planet in self.celestialObjects:
+
+                    planet.draw()
+                    planet.update_position(self.celestialObjects)
+                    # Draw orbits
+                    if(planet.tag != "Sun" and orbit_option):
+                        planet.draw_orbit()
+                    # if orbit option deselected, remove orbit lines
+                    if( not orbit_option and planet.orbit_line_id ):
+                        self.canvas.delete(f"{planet.tag}_orbit")
+                        planet.orbit_line_id = None
+
+            if( hasattr(self, 'selected_planet') and self.selected_planet ):
+                self.update_callback(self.selected_planet)
+
         
-        if( hasattr(self, 'selected_planet') and self.selected_planet ):
-            self.update_callback(self.selected_planet)
-
         self.canvas.after(self.settings.SPEED, self.update_objects)

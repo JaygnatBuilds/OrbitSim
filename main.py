@@ -1,6 +1,6 @@
 import math
 import tkinter as tk
-from tkinter import Canvas, Tk, ttk, IntVar
+from tkinter import Canvas, Tk, ttk, IntVar, messagebox
 from celestialobject import ObjectManager, Vector2
 
 
@@ -110,9 +110,9 @@ class OrbitSimulation:
         orbit_pause = ttk.Button(form_frame, text="Pause", command=lambda: self.toggle_pause(orbit_pause))
         orbit_pause.grid(row=4, column=1, sticky='w', padx=(5,0), pady=5)
 
-        # Spawn planets button
-        spawn_planets = ttk.Button(form_frame, text="Spawn Planets", command=self.spawn_planets)
-        spawn_planets.grid(row=5, column=0, sticky='w', padx=(5,0), pady=5)
+        # info button
+        info_button = ttk.Button(form_frame, text="Show Info", command=self.show_info)
+        info_button.grid(row=5, column=0, sticky='w', padx=(5,0), pady=5)
 
         # zoom scale slider
         zoom_scale = tk.Scale(
@@ -174,6 +174,10 @@ class OrbitSimulation:
         clear_planets = ttk.Button(form_frame, text="Clear Planets", command=self.clear_planets)
         clear_planets.grid(row=8, column=0, sticky='w', padx=(5,0), pady=5)
 
+        # Spawn planets button
+        spawn_planets = ttk.Button(form_frame, text="Spawn Planets", command=self.spawn_planets)
+        spawn_planets.grid(row=8, column=1, sticky='w', padx=(5,0), pady=5)
+
     def update_planet_info(self, planet):
         
         # set selected planet of objectManager class
@@ -217,6 +221,46 @@ class OrbitSimulation:
             planet.update_radius()
             planet.update_screen_position()
             planet.draw()
+            
+    def show_info(self):
+        
+        # TO DO : FINISH
+
+        if( hasattr(self, 'info_window') and self.info_window.winfo_exists() ):
+            self.info_window.lift()
+            self.info_window.focus_force()
+            return
+
+
+        self.info_window = tk.Toplevel(self.root)
+        self.info_window.title("Simulation Help")
+        self.info_window.geometry("350x400")
+        self.info_window.transient(self.root)
+        self.info_window.resizable(0,0)
+
+        tk.Label(self.info_window, text="Python Orbit Simulator", font=("Arial", 12, "bold")).pack(pady=10)
+
+        text_frame = tk.Frame(self.info_window)
+        text_frame.pack(fill="both", expand=True, padx=20)
+
+        text_content = tk.Text(text_frame, wrap="word", height=10)
+        text_content.pack(side="left", fill="both", expand=True)
+
+        scrollbar = tk.Scrollbar(text_frame, command=text_content.yview)
+        scrollbar.pack(side="right", fill="y")
+        text_content.config(yscrollcommand=scrollbar.set)
+
+        information = """Welcome!
+1. first instruction
+2. Second instruction
+3. Third instruction
+
+        """
+
+        text_content.insert("1.0", information)
+        text_content.config(state="disabled")
+
+        tk.Button(self.info_window, text="Close", command=self.info_window.destroy).pack(pady=10)
 
     def clear_planets(self):
         
