@@ -1,12 +1,11 @@
 import math
 import tkinter as tk
-from tkinter import Canvas, Tk, ttk, IntVar, messagebox
+from tkinter import Canvas, Tk, ttk, IntVar
 from celestialobject import ObjectManager, Vector2
 
 
 WIDTH, HEIGHT = 1200, 675
 
-# TO DO 
 class SimulationSettings():
     def __init__(self):
         # Astronomical Units ( converted to meters )
