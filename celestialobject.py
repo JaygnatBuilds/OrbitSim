@@ -200,10 +200,10 @@ class CelestialObject:
 
         # Calculate velocity from forces in x,y directions
         # F = ma
-        # a = v/t
-        # F = m(v/t) -> F = mtv
-        # v = F/mt
-        self.velocity += Vector2(total_force_x, total_force_y) / self.mass * self.object_manager.settings.TIMESTEP
+        # a = dv/dt
+        # F = m(dv/dt)
+        # dv = (F/m)dt
+        self.velocity += ( Vector2(total_force_x, total_force_y) / self.mass ) * self.object_manager.settings.TIMESTEP
 
         # Increment position based on velocity and time
         self.real_position += self.velocity * self.object_manager.settings.TIMESTEP
@@ -223,7 +223,7 @@ class CelestialObject:
 
         if not coords or len(coords) < 4:
             return
-        
+
         if self.orbit_line_id is None:
             self.orbit_line_id = self.canvas.create_line(
                 *coords,
@@ -251,7 +251,7 @@ class CelestialObject:
             self.orbit = self.orbit[-self.orbital_length:]
             
 
-
+    # Calculate radius of objects based on zoom scale
     def update_radius(self):
         self.radius = self.object_manager.settings.zoom * self.base_radius
 
@@ -287,6 +287,7 @@ class CelestialObject:
         self.orbit_line_id = None
         self.orbit = []
 
+        # If object manager has a selected planet, clear it from the info frame
         if( hasattr(self.object_manager, 'selected_planet') and self.object_manager.selected_planet ):
             if( self.object_manager.selected_planet.tag == self.tag ):
                 self.object_manager.clear_callback()
@@ -328,6 +329,7 @@ class ObjectManager:
         # Check if an item on the canvas was clicked or the background itself
         clicked_items = event.widget.find_withtag(tk.CURRENT)
         
+        # Do not spawn anything if a planet was clicked
         if clicked_items:
             return
         else:
@@ -338,6 +340,7 @@ class ObjectManager:
             radius = self.config['radius'].get()                          # This returns a string btw
             tag = self.config['tag'].get()
 
+            # Input validation for config info
             if(mass == ""):
                 messagebox.showerror("Error", "Object must have mass.") 
                 return
@@ -390,6 +393,7 @@ class ObjectManager:
 
             new_object.draw()
 
+            # Clear config entries
             self.config['mass'].delete(0, tk.END)
             self.config['initial_velocity_x'].delete(0, tk.END)
             self.config['initial_velocity_y'].delete(0, tk.END)
@@ -483,17 +487,21 @@ class ObjectManager:
 
     def update_objects(self):
 
+        # If not planets are on canvas, display edgy message at the bottom
         if( len(self.celestialObjects) == 1):
 
             self.canvas.itemconfig(self.empty_solar_system, state="normal")
 
         else:
-            
+            # Remove edgy message at the bottom
             self.canvas.itemconfig(self.empty_solar_system, state="hidden")
 
+            # Check for pause
             if( not self.config['pause'] ):
+                # Grab draw orbit config variable
                 orbit_option = self.config['draw_orbit'].get()
 
+                # Loop through planets and draw and update positions and potentially draw orbit lines
                 for planet in self.celestialObjects:
 
                     planet.draw()
@@ -507,6 +515,8 @@ class ObjectManager:
                         planet.orbit_line_id = None
                         planet.orbit = []
 
+
+            # Send selected planet info to update_planet_info
             if( hasattr(self, 'selected_planet') and self.selected_planet ):
                 self.update_callback(self.selected_planet)
 
