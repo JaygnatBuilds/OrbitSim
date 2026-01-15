@@ -21,7 +21,14 @@ Give it a try yourself by reading the "Getting Started" section
     sudo apt-get update
     sudo apt-get install python3-tk
     ```
+
+1. Clone this Repo <br>
+  ```bash
+  git clone https://github.com/JustinGnatiuk/OrbitSim.git
+  cd OrbitSim
+  ```
   
+
 
 
 
