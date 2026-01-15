@@ -12,6 +12,8 @@ Give it a try yourself by reading the "Getting Started" section
 
 # Getting Started
 ## Prerequisites
+- Basic CLI usage
+- [Python3](https://www.python.org/downloads/) 
 
 
 
