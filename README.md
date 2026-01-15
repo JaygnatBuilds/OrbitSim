@@ -12,8 +12,9 @@ Give it a try yourself by reading the "Getting Started" section
 
 # Getting Started
 ## Prerequisites
-- Basic CLI usage
+- Basic [CLI](https://en.wikipedia.org/wiki/Command-line_interface) usage
 - [Python3](https://www.python.org/downloads/) 
+
 
 
 
