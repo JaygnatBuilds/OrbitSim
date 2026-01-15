@@ -24,7 +24,7 @@ Give it a try yourself by reading the "Getting Started" section
 
 1. Clone this Repo <br>
     ```bash
-    git clone https://github.com/JustinGnatiuk/OrbitSim.git
+    git clone https://github.com/JaygnatBuilds/OrbitSim.git
     cd OrbitSim
     ```
 2. Execute 'run.sh' to start the program <br>
