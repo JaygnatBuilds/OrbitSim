@@ -7,6 +7,11 @@ Users can spawn a preset amount of the planets in our own solar system to observ
 with their own custom mass, velocity, and pixel radius to see what would happen to a planet in our solar system with those conditions. <br>
 <br>
 GUI also comes with various options for drawing orbit lines, zooming in/out, changing speed of simulation, etc. <br>
+<br>
+Give it a try yourself by reading the "Getting Started" section
+
+# Getting Started
+
 
 
 
