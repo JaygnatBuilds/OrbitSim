@@ -11,6 +11,7 @@ GUI also comes with various options for drawing orbit lines, zooming in/out, cha
 Give it a try yourself by reading the "Getting Started" section
 
 # Getting Started
+## Prerequisites
 
 
 
