@@ -27,7 +27,12 @@ Give it a try yourself by reading the "Getting Started" section
     git clone https://github.com/JustinGnatiuk/OrbitSim.git
     cd OrbitSim
     ```
+2. Execute 'run.sh' to start the program <br>
+    ```bash
+    ./run.sh
+    ```
   
+
 
 
 
